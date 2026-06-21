@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #0d0d0d;
+  overflow-x: hidden;
+}
+
+/* Timeline diamond dot — rotated square, easiest as raw CSS */
+.t-dot {
+  width: 12px;
+  height: 12px;
+  background: #3a3a3a;
+  border: 2px solid #3a3a3a;
+  margin: 22px auto;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s;
+  transform: rotate(45deg);
+}
+.t-event:hover .t-dot,
+.t-event.active .t-dot {
+  background: #c8a951;
+  border-color: #c8a951;
+  box-shadow: 0 0 12px rgba(200, 169, 81, 0.4);
+}
+
+/* Timeline connecting line */
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #3a3a3a 5%,
+    #3a3a3a 95%,
+    transparent
+  );
+}
+
+/* Timeline popup arrow */
+.t-popup::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #232323;
+  border-left: 1px solid #c8a951;
+  border-top: 1px solid #c8a951;
+}
+
+/* Hide scrollbar on timeline drag-scroll track but keep it scrollable */
+.timeline-scroll {
+  cursor: grab;
+}
+.timeline-scroll:active {
+  cursor: grabbing;
+}
+
+/* Custom scrollbar for modal */
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
