@@ -1,12 +1,15 @@
 import { useState } from 'react'
+import { NavLink, Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const LINKS = [
-  { href: '#characters', label: 'Characters' },
-  { href: '#titans', label: 'Titans' },
-  { href: '#timeline', label: 'Timeline' },
-  { href: '#worldmap', label: 'World Map' },
-  { href: '#quiz', label: 'Quiz' },
-  { href: '#community', label: 'Community' },
+  { to: '/characters', label: 'Characters' },
+  { to: '/titans', label: 'Titans' },
+  { to: '/timeline', label: 'Timeline' },
+  { to: '/world-map', label: 'World Map' },
+  { to: '/rumbling', label: 'The Rumbling' },
+  { to: '/quiz', label: 'Quiz' },
+  { to: '/community', label: 'Community' },
 ]
 
 export default function Navbar() {
@@ -16,52 +19,94 @@ export default function Navbar() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-bg/90 backdrop-blur-md border-b border-border px-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between h-16">
-          <a
-            href="#hero"
+          <Link
+            to="/"
+            data-cursor-hover
             className="font-display text-[1.1rem] font-bold text-gold tracking-[0.15em] no-underline"
           >
             ⚔ THE WALLS
-          </a>
+          </Link>
 
-          <ul className="hidden md:flex gap-8 list-none">
+          <ul className="hidden lg:flex gap-7 list-none">
             {LINKS.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  className="text-gray no-underline text-[0.8rem] tracking-[0.12em] uppercase transition-colors hover:text-gold"
+              <li key={link.to}>
+                <NavLink
+                  to={link.to}
+                  data-cursor-hover
+                  className={({ isActive }) =>
+                    `relative text-[0.78rem] tracking-[0.12em] uppercase no-underline transition-colors ${
+                      isActive ? 'text-gold' : 'text-gray hover:text-gold'
+                    }`
+                  }
                 >
-                  {link.label}
-                </a>
+                  {({ isActive }) => (
+                    <span className="relative pb-1">
+                      {link.label}
+                      {isActive && (
+                        <motion.span
+                          layoutId="nav-underline"
+                          className="absolute left-0 right-0 -bottom-1 h-px bg-gold"
+                        />
+                      )}
+                    </span>
+                  )}
+                </NavLink>
               </li>
             ))}
           </ul>
 
           <button
-            className="md:hidden flex flex-col gap-[5px] cursor-pointer bg-transparent border-none p-1"
+            className="lg:hidden flex flex-col gap-[5px] cursor-pointer bg-transparent border-none p-1"
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="Menu"
           >
-            <span className="block w-6 h-[1.5px] bg-ink" />
-            <span className="block w-6 h-[1.5px] bg-ink" />
-            <span className="block w-6 h-[1.5px] bg-ink" />
+            <motion.span
+              className="block w-6 h-[1.5px] bg-ink"
+              animate={menuOpen ? { rotate: 45, y: 6.5 } : { rotate: 0, y: 0 }}
+            />
+            <motion.span
+              className="block w-6 h-[1.5px] bg-ink"
+              animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
+            />
+            <motion.span
+              className="block w-6 h-[1.5px] bg-ink"
+              animate={menuOpen ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }}
+            />
           </button>
         </div>
       </nav>
 
-      {menuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 bottom-0 bg-bg/98 z-[99] flex flex-col items-center justify-center gap-8">
-          {LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="text-ink no-underline font-display text-2xl tracking-[0.2em]"
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed top-16 left-0 right-0 bottom-0 bg-bg/98 z-[99] flex flex-col items-center justify-center gap-7"
+          >
+            {LINKS.map((link, i) => (
+              <motion.div
+                key={link.to}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <NavLink
+                  to={link.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `no-underline font-display text-2xl tracking-[0.15em] ${
+                      isActive ? 'text-gold' : 'text-ink'
+                    }`
+                  }
+                >
+                  {link.label}
+                </NavLink>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

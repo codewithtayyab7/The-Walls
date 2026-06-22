@@ -1,6 +1,6 @@
-# The Walls — React Migration
+# The Walls — React Multi-Page Edition
 
-A React + Tailwind port of the original static HTML/CSS/JS Attack on Titan fan site. Built as the frontend half of a future MERN stack — the data layer is already shaped so swapping static imports for a real Express/MongoDB API touches one file per resource, not the components.
+A full multi-page React + Tailwind + Framer Motion fan site, built as the frontend half of a MERN stack. Every character and Titan gets a dedicated, richly detailed profile page; navigation is real client-side routing; motion (page transitions, scroll parallax, a custom cursor) runs throughout.
 
 ## Getting started
 
@@ -17,55 +17,83 @@ npm run preview    # preview the production build locally
 npm run lint        # eslint
 ```
 
-> This project was generated without network access to npm, so dependency versions in `package.json` were hand-pinned to current stable releases as of writing rather than installed and verified locally. Run `npm install` and if anything's off, `npm outdated` / bump as needed — the API surface used (Vite 6, React 18, Tailwind 3) is stable and shouldn't need code changes.
+> Built without npm registry access in the sandbox that generated it, so versions are hand-pinned to current stable releases rather than installed and verified locally. Run `npm install` and address anything `npm outdated` flags — the libraries used (Vite 6, React 18, React Router 6, Framer Motion 11, Tailwind 3) are stable and the code shouldn't need changes for minor version bumps.
 
-## What changed from the original
+## What's new in this version
 
-| Original | React version |
-|---|---|
-| Global `var` state (`activeFilter`, `currentChar`, `quizStep`...) | `useState` scoped to the component that owns it |
-| `innerHTML` string templates | JSX (auto-escaped, no manual sanitization needed) |
-| `document.getElementById` / class toggling | Refs + conditional rendering |
-| Global `IntersectionObserver` over `.fade-in` | `useScrollReveal` hook, one observer per component instance |
-| Timeline mousedown/mousemove drag listeners | `useDragScroll` hook |
-| `setTimeout` + `dataset.val` width animation trick | `useAnimatedWidth` hook (same trick, React-native) |
-| Quiz answer→character mapping via a separate index-matched array | Each quiz option now carries its own `points` field — see note in `src/data/quiz.js` |
-| One 800-line HTML file | ~25 focused components under `src/components/` |
+- **Real multi-page routing** (`react-router-dom`) — every section is its own URL, not an anchor scroll. Routes are lazy-loaded so the initial bundle stays small.
+- **Rich detail pages** for every character and Titan: stats, abilities, relationships, gallery, voice actors, lore — not just a modal popup.
+- **Motion system** built on Framer Motion: animated page transitions, scroll-linked reveals (`FadeIn`), a parallax wrapper (`Parallax`), and a custom cursor that reacts to hoverable elements.
+- **The Rumbling page** — a staged, symbolic cinematic sequence (marching → stilling → dissolving to dust → aftermath) representing the Rumbling's end. This deliberately avoids depicting any character or violence; it's titan silhouettes and abstract dust particles only.
+- **Placeholder image system** — every portrait/gallery slot renders a clearly labeled placeholder until you drop a real file at the exact path. See **`IMAGE_GUIDE.md`** for the full manifest of every image slot, its path, and recommended dimensions.
+- **Original SVG emblem set** (`Emblem.jsx`) — symbolic icons (blades, wings, titan silhouette, crown, shield, eye, compass) used as decorative motifs. These are intentionally abstract, not character likenesses, to stay clear of IP issues.
+- **Procedural atmosphere backgrounds** (`AtmosphereBackground.jsx`) — gradient mesh + animated fog + optional mountain/wall ridge silhouette, used on every page header instead of stock photography (avoids licensing risk entirely, stays visually cohesive).
 
-Visual design, copy, animations, and all interactive behavior (search, filters, modal, drag-scroll timeline, clickable map, quiz scoring, animated bars, rumbling counter) are preserved as-is.
+## A note on imagery
+
+This project does not include or reference official Attack on Titan artwork, screenshots, or closely-derivative fan art — that's copyrighted material. Instead:
+
+- Every image slot is a **labeled placeholder** by default (see screenshots below — dashed border, filename, and dimensions shown right in the UI).
+- **`IMAGE_GUIDE.md`** lists every single slot across the site with its exact path.
+- Drop your own images (art you made, screenshots you have rights to use, properly licensed stock, etc.) into the matching folder under `src/assets/images/`, and they appear automatically — no code changes needed.
+- Decorative motifs use original SVG emblems, not character likenesses.
 
 ## Project structure
 
 ```
 src/
-├── data/            Static content (will move server-side)
-├── services/        Data-fetching functions — the seam for the backend
-├── hooks/           Reusable logic extracted from the original DOM code
+├── assets/images/    Drop your own images here — see IMAGE_GUIDE.md
+├── data/             Static content (will move server-side)
+├── services/         Data-fetching functions — the seam for the backend
+├── hooks/            useDragScroll, useAnimatedWidth
+├── utils/            resolveImage.js — the placeholder image resolution logic
+├── layouts/          RootLayout (navbar/footer/cursor shell shared by every route)
+├── router/           Lazy route definitions
 ├── components/
-│   ├── layout/      Navbar, Footer
-│   ├── sections/    One component per page section (Hero, Characters, Titans...)
-│   └── ui/          Smaller pieces (CharacterCard, modal, stat bars...)
-└── App.jsx
+│   ├── layout/       Navbar, Footer
+│   ├── motion/       PageTransition, CustomCursor, Parallax, ScrollToTop
+│   └── ui/           CharacterCard, TitanCard, PlaceholderImage, Emblem,
+│                      AtmosphereBackground, StatBar, Breadcrumb, FadeIn...
+├── pages/            One file per route — Home, CharactersList, CharacterDetail,
+│                      TitansList, TitanDetail, TimelinePage, WorldMapPage,
+│                      QuizPage, CommunityPage, RumblingPage, NotFound
+└── App.jsx           Router + Suspense + AnimatePresence wiring
 ```
+
+## Routes
+
+| Path | Page |
+|---|---|
+| `/` | Home |
+| `/characters` | Character registry (search + filter) |
+| `/characters/:slug` | Character profile |
+| `/titans` | Titan encyclopedia |
+| `/titans/:slug` | Titan profile |
+| `/timeline` | Interactive + full chronological timeline |
+| `/world-map` | Interactive SVG map |
+| `/quiz` | Personality quiz |
+| `/community` | Posts, fan poll, rankings |
+| `/rumbling` | Cinematic Rumbling sequence |
+| `*` | 404 |
 
 ## Connecting the MongoDB/Express backend later
 
-Right now `src/services/characterService.js` and `communityService.js` just resolve the static arrays in `src/data/`. When the backend exists:
+Same pattern as before — `src/services/*.js` is the seam. Right now each function resolves a static import from `src/data/`. When the Express API exists:
 
-1. Stand up Express routes mirroring the data shapes already in `src/data/*.js` (they're written to map directly onto Mongoose schemas — flat objects, no nested logic).
-2. In each service file, replace the `Promise.resolve(STATIC_ARRAY)` body with an `axios.get` call:
-   ```js
-   import axios from 'axios'
-   const API = import.meta.env.VITE_API_URL
-   export const getCharacters = () => axios.get(`${API}/characters`).then(r => r.data)
-   ```
-3. Copy `.env.example` to `.env.local` and set `VITE_API_URL`.
-4. No component changes needed — they already call `getCharacters()`, `getPosts()`, etc., and just consume whatever resolves.
+```js
+import axios from 'axios'
+const API = import.meta.env.VITE_API_URL
+export const getCharacters = () => axios.get(`${API}/characters`).then(r => r.data)
+export const getCharacterBySlug = (slug) => axios.get(`${API}/characters/${slug}`).then(r => r.data)
+```
 
-The one place that'll need real backend logic eventually: the **Fan Poll** (currently static percentages) and **Community posts** (currently static) would become POST endpoints for voting/posting, plus the rankings would aggregate from real votes instead of hardcoded numbers.
+No component changes needed — pages already call `getCharacters()`, `getCharacterBySlug()`, etc.
 
-## Known follow-ups
+Copy `.env.example` to `.env.local` and set `VITE_API_URL` once the backend exists.
 
-- No router — it's a single scrolling page with anchor nav, same as the original. Add `react-router-dom` if this grows into multiple pages.
-- `axios` is already in `package.json` dependencies, ready for step 2 above.
-- Tailwind theme tokens (colors, fonts, keyframes) live in `tailwind.config.js` — extend there, not inline, to keep the design system centralized.
+## Known follow-ups / good next steps
+
+- **Images**: see `IMAGE_GUIDE.md` — this is the main thing left to fill in.
+- **Quiz scoring** is self-contained per option (`points` field) — safe to reorder or extend questions without touching component logic.
+- **Reduced motion**: the custom cursor and most animations respect `prefers-reduced-motion`; spot-check if you add new Framer Motion animations.
+- **Auth/voting**: Community page's poll and post likes are static data — once Express exists, these become real POST endpoints (vote, like, create post).

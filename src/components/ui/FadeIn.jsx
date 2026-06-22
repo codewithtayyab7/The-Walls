@@ -1,20 +1,20 @@
-import useScrollReveal from '../../hooks/useScrollReveal'
+import { motion } from 'framer-motion'
 
 /**
- * Drop-in replacement for the original .fade-in class. Wrap any section
- * content in this and it reveals on scroll into view.
+ * Scroll reveal using Framer Motion's whileInView, replacing the old
+ * manual IntersectionObserver hook — same visual result, but now part of
+ * the same animation system driving everything else on the site.
  */
-export default function FadeIn({ children, className = '', as: Tag = 'div' }) {
-  const [ref, isVisible] = useScrollReveal()
-
+export default function FadeIn({ children, className = '', delay = 0, y = 24 }) {
   return (
-    <Tag
-      ref={ref}
-      className={`transition-all duration-500 ease-out ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-      } ${className}`}
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
-    </Tag>
+    </motion.div>
   )
 }

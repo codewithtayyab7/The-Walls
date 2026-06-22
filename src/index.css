@@ -77,6 +77,18 @@ body {
   background: #3a3a3a;
 }
 
+/* Hide the native cursor on devices with a fine pointer (mouse), where the
+   custom cursor component takes over. Touch devices are untouched since the
+   media query only matches when a precise pointer is actually present.
+   Also gated on prefers-reduced-motion so we never hide the real cursor
+   when CustomCursor itself has bailed out and won't render a replacement. */
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .cursor-none-desktop,
+  .cursor-none-desktop * {
+    cursor: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

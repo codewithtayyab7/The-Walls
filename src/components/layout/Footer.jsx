@@ -1,26 +1,28 @@
+import { Link } from 'react-router-dom'
+
 const COLUMNS = [
   {
     title: 'Explore',
     links: [
-      { href: '#characters', label: 'Characters' },
-      { href: '#titans', label: 'Titans' },
-      { href: '#timeline', label: 'Timeline' },
-      { href: '#worldmap', label: 'World Map' },
+      { to: '/characters', label: 'Characters' },
+      { to: '/titans', label: 'Titans' },
+      { to: '/timeline', label: 'Timeline' },
+      { to: '/world-map', label: 'World Map' },
     ],
   },
   {
     title: 'Features',
     links: [
-      { href: '#quiz', label: 'Personality Quiz' },
-      { href: '#rumbling', label: 'The Rumbling' },
-      { href: '#community', label: 'Community' },
+      { to: '/quiz', label: 'Personality Quiz' },
+      { to: '/rumbling', label: 'The Rumbling' },
+      { to: '/community', label: 'Community' },
     ],
   },
   {
     title: 'About',
     links: [
-      { href: '#', label: 'About Site' },
-      { href: '#', label: 'Disclaimer' },
+      { to: '/about', label: 'About Site' },
+      { to: '/disclaimer', label: 'Disclaimer' },
     ],
   },
 ]
@@ -48,12 +50,12 @@ export default function Footer() {
             <ul className="list-none grid gap-2">
               {col.links.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.to}
                     className="text-gray no-underline text-[0.8rem] transition-colors hover:text-gold"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

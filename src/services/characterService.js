@@ -18,3 +18,7 @@ export const getCharacters = async () => {
 export const getCharacterById = async (id) => {
   return Promise.resolve(CHARACTERS.find((c) => c.id === id))
 }
+
+export const getCharacterBySlug = async (slug) => {
+  return Promise.resolve(CHARACTERS.find((c) => c.slug === slug))
+}
